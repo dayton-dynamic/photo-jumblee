@@ -16,17 +16,25 @@ class Jumbler:
         self.redo_grid()
 
     def redo_grid(self):
-        self.new_order = list(range(self.n_horiz * self.n_vert))
+        self.original_order = list(range(self.n_horiz * self.n_vert))
+        self.display_order = self.original_order[:]
         self.piece_width_px = int(self.width_pixels / self.n_horiz)
         self.piece_height_px = int(self.height_pixels / self.n_vert)
         self.shuffle()
 
     def shuffle(self):
-        random.shuffle(self.new_order)
+        random.shuffle(self.display_order)
+
+    def unshuffle(self):
+        self.display_order = self.original_order[:]
+
+    def reverse(self):
+        self.display_order = self.original_order[:]
+        self.display_order.reverse()
 
     def jumbled(self, frame):
         pieces = list(chop(frame, self.piece_width_px, self.piece_height_px))
-        pieces = reorder_sequence(pieces, self.new_order)
+        pieces = reorder_sequence(pieces, self.display_order)
         return fuse(pieces, self.n_horiz) 
 
 
@@ -55,6 +63,10 @@ def main():
             break
         elif keypress == ord('s'):
             jumbler.shuffle()
+        elif keypress == ord('o'):
+            jumbler.unshuffle()
+        elif keypress == ord('r'):
+            jumbler.reverse()
         elif keypress == ord('+'):
             jumbler.n_horiz += 1
             jumbler.redo_grid()
