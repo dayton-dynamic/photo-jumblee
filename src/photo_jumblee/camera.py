@@ -1,9 +1,10 @@
 
-import numpy as np
-import cv2 as cv
 import random
 from dataclasses import dataclass
+
+import cv2 as cv
 from matrix import chop, fuse, reorder_sequence
+
 
 @dataclass
 class Jumbler:
@@ -22,20 +23,66 @@ class Jumbler:
         self.piece_height_px = int(self.height_pixels / self.n_vert)
         self.shuffle()
 
-    def shuffle(self):
+    def shuffle(self):  # S
         random.shuffle(self.display_order)
 
-    def unshuffle(self):
+    def unshuffle(self):  # O
         self.display_order = self.original_order[:]
 
-    def reverse(self):
-        self.display_order = self.original_order[:]
+    def reverse(self):  # R
         self.display_order.reverse()
+
+    def advance(self):  # A
+        self.display_order = [self.display_order[-1], *self.display_order[:-1]]
+
+    def dupe(self):  # D
+        center = len(self.display_order) // 2
+        self.display_order = [center, ] * len(self.display_order)
+
+    def more_cols(self):
+        self.n_horiz += 1
+        self.redo_grid()
+
+    def fewer_cols(self):
+        self.n_horiz = max(self.n_horiz - 1, 1)
+        self.redo_grid()
+
+    def more_rows(self):
+        self.n_vert += 1
+        self.redo_grid()
+
+    def fewer_rows(self):
+        self.n_vert = max(self.n_vert - 1, 1)
+        self.redo_grid()
 
     def jumbled(self, frame):
         pieces = list(chop(frame, self.piece_width_px, self.piece_height_px))
         pieces = reorder_sequence(pieces, self.display_order)
         return fuse(pieces, self.n_horiz) 
+
+    RAW_MAPPING = {
+        7: unshuffle,
+        8: shuffle,
+        # 9 handled in main()
+
+        4: reverse,
+        5: dupe,
+        6: advance,
+
+        1: fewer_cols,
+        2: more_rows,
+        3: more_cols,
+
+        0: fewer_rows,
+    }
+
+    ORD_MAPPING = {ord(str(k)): v for k, v in RAW_MAPPING.items()}
+
+    def dispatcher(self, keypress):
+        # print(f"{keypress=}")
+        # print(f"{self.ORD_MAPPING.get(keypress)=}")
+        if func := self.ORD_MAPPING.get(keypress):
+            func(self)
 
 
 def main():
@@ -59,21 +106,11 @@ def main():
         # Display the resulting frame
         cv.imshow('frame', frame)
         keypress = cv.waitKey(1)
-        if keypress == ord('q'):
-            break
-        elif keypress == ord('s'):
-            jumbler.shuffle()
-        elif keypress == ord('o'):
-            jumbler.unshuffle()
-        elif keypress == ord('r'):
-            jumbler.reverse()
-        elif keypress == ord('+'):
-            jumbler.n_horiz += 1
-            jumbler.redo_grid()
-        elif keypress == ord('-'):
-            jumbler.n_horiz = max(jumbler.n_horiz - 1, 1)
-            jumbler.redo_grid()
 
+        if keypress == ord('9'):
+            break
+        else:
+            jumbler.dispatcher(keypress)
 
     # When everything done, release the capture
     cap.release()
