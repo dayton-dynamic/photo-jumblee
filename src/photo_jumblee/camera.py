@@ -57,6 +57,8 @@ class Jumbler:
 
     def jumbled(self, frame):
         pieces = list(chop(frame, self.piece_width_px, self.piece_height_px))
+        for (idx, piece) in enumerate(pieces):
+            cv.putText(piece, str(idx), (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255),2,cv.LINE_AA)
         pieces = reorder_sequence(pieces, self.display_order)
         return fuse(pieces, self.n_horiz) 
 
@@ -107,7 +109,7 @@ def main():
         cv.imshow('frame', frame)
         keypress = cv.waitKey(1)
 
-        if keypress == ord('9'):
+        if keypress == ord('q'):
             break
         else:
             jumbler.dispatcher(keypress)

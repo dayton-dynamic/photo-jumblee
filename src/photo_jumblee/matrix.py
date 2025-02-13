@@ -1,5 +1,7 @@
-import numpy as np 
 from itertools import batched
+
+import numpy as np
+
 
 def chop(matrix, width, height):
     """

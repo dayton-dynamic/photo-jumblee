@@ -1,6 +1,8 @@
-from photo_jumblee.matrix import chop, fuse, reorder_sequence
 from numpy import array, array_equal
 from pytest import fixture
+
+from photo_jumblee.matrix import chop, fuse, reorder_sequence
+
 
 @fixture 
 def matrix0():
