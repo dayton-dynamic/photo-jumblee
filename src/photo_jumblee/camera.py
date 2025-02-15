@@ -6,6 +6,8 @@ import cv2 as cv
 from matrix import chop, fuse, reorder_sequence
 
 
+MAX_HEIGHT_WID = 22 
+
 @dataclass
 class Jumbler:
     n_horiz = 3 
@@ -41,6 +43,7 @@ class Jumbler:
 
     def more_cols(self):
         self.n_horiz += 1
+        self.n_horiz = min(self.n_horiz, MAX_HEIGHT_WID)
         self.redo_grid()
 
     def fewer_cols(self):
@@ -49,6 +52,7 @@ class Jumbler:
 
     def more_rows(self):
         self.n_vert += 1
+        self.n_vert = min(self.n_vert, MAX_HEIGHT_WID)
         self.redo_grid()
 
     def fewer_rows(self):
