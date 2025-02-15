@@ -1,11 +1,12 @@
 
 import random
+from time import monotonic
 from dataclasses import dataclass
 
 import cv2 as cv
 from matrix import chop, fuse, reorder_sequence
 
-
+BOREDOM_THRESHOLD_SECONDS = 60 
 MAX_HEIGHT_WID = 22 
 
 @dataclass
@@ -14,6 +15,7 @@ class Jumbler:
     n_vert = 3 
     width_pixels = 640
     height_pixels = 480
+    bored_at = float('inf')
 
     def __post_init__(self):
         self.redo_grid()
@@ -66,6 +68,20 @@ class Jumbler:
         pieces = reorder_sequence(pieces, self.display_order)
         return fuse(pieces, self.n_horiz) 
 
+    def is_boring(self):
+        return self.display_order == sorted(self.display_order)
+
+    def fix_boredom(self):
+        if self.is_boring():
+            if monotonic() > self.bored_at:
+                self.n_horiz = 3 
+                self.n_vert = 3
+                self.redo_grid()
+            else:
+                self.bored_at = min(self.bored_at, monotonic() + BOREDOM_THRESHOLD_SECONDS)
+        else:
+            self.bored_at = float('inf')
+
     RAW_MAPPING = {
         7: unshuffle,
         8: shuffle,
@@ -117,6 +133,7 @@ def main():
             break
         else:
             jumbler.dispatcher(keypress)
+        jumbler.fix_boredom()
 
     # When everything done, release the capture
     cap.release()
